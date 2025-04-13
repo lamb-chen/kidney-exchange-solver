@@ -52,7 +52,9 @@ class WeightedSumOptimiser(object):
         for altruist in pool.altruists:
             altruist.mip_unmatched = self.model.addVar(vtype=GRB.BINARY, name=f'unmatched_altruist_{altruist.id}')
 
-        self.model.setParam(GRB.Param.MultiObjMethod, 1) 
+        # setting the multi-objective method to 0 = weighted sum 
+        # setting to 1 = hierarchical
+        self.model.setParam(GRB.Param.MultiObjMethod, 0) 
         self.model.update()
 
     def optimise(self, pool, constraint_list):
@@ -60,7 +62,7 @@ class WeightedSumOptimiser(object):
         # paper has constraint s.t. where altruist mip var is 1 if they are unmatched
         # and 0 if they are matched in a cycle so they are not double counted
         # altruist can be added to create a dpd chain, or donate to the deceased donor pool
-        for i, altruist in enumerate(pool.altruists):
+        for altruist in pool.altruists:
             # first find all cycles that contain this altruistic donor
             cycles_with_altruist = []
             for cycle in self.cycles:

@@ -50,27 +50,29 @@ class HierarchicalOptimiser(object):
             self.model.addConstr(quicksum(node.donor.mip_vars) <= 1)
         self.model.update()
 
+        # paper has constraint s.t. where altruist mip var is 1 if they are unmatched
+        # and 0 if they are matched in a cycle so they are not double counted
+        # altruist can be added to create a dpd chain, or donate to the deceased donor pool
         for altruist in pool.altruists:
+            print(altruist.id)
             altruist.mip_unmatched = self.model.addVar(vtype=GRB.BINARY, name=f'unmatched_altruist_{altruist.id}')
-
+            # # first find all cycles that contain this altruistic donor
+            # cycles_with_altruist = []
+            # for cycle in self.cycles:
+            #     if any(node.donor.id == altruist.id and node.is_altruist for node in cycle.donor_patient_nodes):
+            #         cycles_with_altruist.append(cycle)
+            self.model.addConstr(
+                altruist.mip_unmatched + quicksum(altruist.mip_vars) == 1,
+                name=f'altruist_constraint_{altruist.id}')
+       
+        # setting the multi-objective method to 1 = hierarchical
+        # setting to 0 = weighted sum 
         self.model.setParam(GRB.Param.MultiObjMethod, 1) 
         self.model.update()
 
     def optimise(self, pool, constraint_list):
         self._add_mip_vars_and_constraints(pool)
-        # paper has constraint s.t. where altruist mip var is 1 if they are unmatched
-        # and 0 if they are matched in a cycle so they are not double counted
-        # altruist can be added to create a dpd chain, or donate to the deceased donor pool
-        for i, altruist in enumerate(pool.altruists):
-            # first find all cycles that contain this altruistic donor
-            cycles_with_altruist = []
-            for cycle in self.cycles:
-                if any(node.donor.id == altruist.id and node.is_altruist for node in cycle.donor_patient_nodes):
-                    cycles_with_altruist.append(cycle)
-            
-            self.model.addConstr(
-                altruist.mip_unmatched + quicksum(cycle.mip_var for cycle in cycles_with_altruist) == 1,
-                name=f'altruist_constraint_{altruist.id}')
+
 
         self.model.ModelSense = GRB.MAXIMIZE 
         self.model.update()

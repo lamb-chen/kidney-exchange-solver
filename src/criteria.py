@@ -5,6 +5,8 @@ class MaxTwoCycles():
     def cycle_val(self, cycle):
         if cycle.length == 2:
             return 1
+        if cycle.length == 3 and cycle.find_num_of_backarcs() > 1:
+            return 1
         return 0
 
     def altruist_val(self):
@@ -18,7 +20,7 @@ class MaxSize():
         return cycle.length
 
     def altruist_val(self):
-        return 0
+        return 1
     
 class MinThreeCycles():
     def __init__(self):
