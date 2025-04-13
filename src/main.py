@@ -4,6 +4,7 @@ import printing
 import sys
 import weightedsum
 import plotting
+import johnsons
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -17,8 +18,13 @@ if __name__ == "__main__":
     print("Finished reading input file.\n")
 
     print("Finding cycles..\n")
-    cycles = pool.create_cycles_objects(3)
+    cycles, found_cycles_printable = johnsons.johnsons(pool.donor_patient_nodes, 3)
     print("Cycle objects created.\n")
+
+
+    # print("Finding cycles..\n")
+    # cycles = pool.create_cycles_objects(3)
+    # print("Cycle objects created.\n")
 
     print("Running Hierarchical solver...\n")
     g_solver = hierarchical.HierarchicalOptimiser(pool, cycles)
@@ -36,6 +42,9 @@ if __name__ == "__main__":
     plotter = plotting.Plot(optimal_cycles, pool.donor_patient_nodes, solver_type)
     plotter.plot_graph()
     print("Finished plotting graphs.\n")
+
+
+
 
     # print("Running Weighted Sum solver...\n")
     # g_solver = weightedsum.WeightedSumOptimiser(pool, cycles)

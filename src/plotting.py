@@ -30,8 +30,6 @@ class Plot():
                         self.selected_graph.add_edge(node_id, last_node_id, color=colour)
                         self.selected_edges.add((node_id, last_node_id))
 
-                    last_node = node 
-
                 else:
                     node_id = f"{node.donor.id}, {node.patient.id}"
                     if node_id not in self.selected_nodes:
@@ -40,10 +38,12 @@ class Plot():
 
                     if last_node is not None:
                         last_node_id = f"{last_node.donor.id}, {last_node.patient.id}"
+                        if last_node.is_altruist:
+                            last_node_id = f"{last_node.donor.id}"
                         self.selected_graph.add_edge(last_node_id, node_id, color=colour)
                         self.selected_edges.add((last_node_id, node_id))
 
-                    last_node = node  
+                last_node = node  
 
             # if cycle is meant to be a chain don't add edge from last to first node i.e. complete cycle 
             if not cycle.is_chain:

@@ -39,6 +39,14 @@ class DonorPatientNode(object):
         self.recipient_patients = []
         self.out_edges = []
         self.is_altruist = is_altruist
+        self.low_link_value = None
+        self.index = None
+    
+    def set_index(self, index):
+        self.index = index
+    
+    def set_low_link_value(self, low_link_value):
+        self.low_link_value = low_link_value
 
     def add_edge(self, target_donor_patient_node, score):
         self.out_edges.append(DonorPatientEdge(target_donor_patient_node, score=score))
@@ -90,8 +98,8 @@ class Pool():
         self.donor_patient_nodes = []
         self.altruists = []
 
-    def add_patient(self, patient):
-        self.patients.append(patient)
+    # def add_patient(self, patient):
+    #     self.patients.append(patient)
     
     def add_donor_patient_node(self, donor_patient_node):
         self.donor_patient_nodes.append(donor_patient_node)
