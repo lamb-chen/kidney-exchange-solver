@@ -6,6 +6,10 @@ This kidney exchange program solver includes:
 
 The project was created as part of my final year dissertation for my undergraduate Computer Science degree.
 
+## Dependencies
+Require pre-installation of Gurobi. [Instructions for installation can be found here.](https://support.gurobi.com/hc/en-us/articles/14799677517585-Getting-Started-with-Gurobi-Optimizer)
+Note: a license must be accquired. This project was created with the free academic license.
+
 ## How to run
 
 ## Understanding the output
