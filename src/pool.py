@@ -25,6 +25,14 @@ class Patient(object):
     def __init__(self, id):
         self.id = id
         self.mip_vars = []
+        self.cpra = None
+        self.blood_type = None
+    
+    def set_cpra(self, cpra):
+        self.cpra = cpra
+    
+    def set_blood_type(self, blood_type):
+        self.blood_type = blood_type
 
 class Donor(object):
     def __init__(self, id, dage):

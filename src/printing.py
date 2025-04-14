@@ -85,15 +85,19 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
     total_cycles = len(optimal_cycles)
     total_weight = sum(cycle.get_cycle_weight() for cycle in optimal_cycles)
     total_num_of_backarcs = sum(cycle.find_num_of_backarcs() for cycle in optimal_cycles)
+
     two_cycle_count = sum(1 for cycle in optimal_cycles if cycle.length == 2)
     three_cycle_count = sum(1 for cycle in optimal_cycles if cycle.length == 3)
     altruist_count = sum(1 for cycle in optimal_cycles if cycle.is_chain)
     altruist_nodes = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if node.is_altruist)
+    
+    highly_sensitised_count = sum(1 for patient in pool.patients.values() if patient.cpra > 0.85)
     with open(filename, 'w') as file:
         file.write("Final Chosen Optimal Exchanges\n")
         file.write(f"\nTotal number of nodes: {total_nodes}")
         file.write(f"\nTotal number of donors: {total_num_of_donors}")
         file.write(f"\nTotal number of patients: {total_num_of_patients}")
+        file.write(f"\nTotal number of highly sensitised patients: {highly_sensitised_count}")
         file.write(f"\nTotal number of altruists: {total_num_of_altruists}")
         file.write(f"\nTotal number of cycles: {total_cycles}")
         file.write(f"\nTotal weight of cycles: {total_weight}")

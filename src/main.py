@@ -5,6 +5,7 @@ import sys
 import weightedsum
 import plotting
 import johnsons
+import time
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -17,14 +18,18 @@ if __name__ == "__main__":
     pool = reader.read_json(filename)
     print("Finished reading input file.\n")
 
+
     print("Finding cycles..\n")
     cycles, found_cycles_printable = johnsons.johnsons(pool.donor_patient_nodes, 3)
     print("Cycle objects created.\n")
 
+    # start = time.perf_counter()
+    # # print("Finding cycles..\n")
+    # # cycles = pool.create_cycles_objects(3)
+    # # print("Cycle objects created.\n")
+    # end = time.perf_counter()
+    # total = end - start
 
-    # print("Finding cycles..\n")
-    # cycles = pool.create_cycles_objects(3)
-    # print("Cycle objects created.\n")
 
     print("Running Hierarchical solver...\n")
     g_solver = hierarchical.HierarchicalOptimiser(pool, cycles)
@@ -43,6 +48,7 @@ if __name__ == "__main__":
     plotter.plot_graph()
     print("Finished plotting graphs.\n")
 
+    # print(f"time taken: {total}")
 
 
 
