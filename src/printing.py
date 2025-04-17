@@ -70,10 +70,11 @@ def write_all_solutions_to_file(optimal_cycles, all_selected_cycles, filename):
         file.write("\nAll Selected Cycles\n")
         if all_selected_cycles:
             for i, selected_cycles in enumerate(all_selected_cycles):
-                file.write(f"\nSolution {i} Cycles: \n")
-                for cycle in selected_cycles:
-                    nodes = [(node.donor.id, node.patient.id) for node in cycle.donor_patient_nodes]
-                    file.write(f"   Cycle {cycle.index}: Nodes: {nodes}\n")
+                if selected_cycles:
+                    file.write(f"\nSolution {i} Cycles: \n")
+                    for cycle in selected_cycles:
+                        nodes = [(node.donor.id, node.patient.id) for node in cycle.donor_patient_nodes]
+                        file.write(f"   Cycle {cycle.index}: Nodes: {nodes}\n")
         else:
             file.write("No cycles selected in this solution.\n")
 

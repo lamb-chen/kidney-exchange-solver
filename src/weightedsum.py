@@ -80,11 +80,11 @@ class WeightedSumOptimiser(object):
 
         for i in range(len(final_constraints)):
             if constraint_list[i//2] == "MIN_THREE_CYCLES":
-                self.model.setObjectiveN(-quicksum(final_constraints[i]), index=i, priority=0)    
+                self.model.setObjectiveN(-quicksum(final_constraints[i]), index=i, priority=0, name=f"objective_{i}")    
             else:
-                self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, priority=0)     
+                self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, priority=0, name=f"objective_{i}")     
         self.model.update()
-        weights_list = [0.1, 1, 0.1, 0.1, 1]
+        weights_list = [0.1, 0.9, 0.1, 0.1, 0.1]
         self.model.Params.ObjNumber = self.model.NumObj
 
         for i in range(len(weights_list)):
