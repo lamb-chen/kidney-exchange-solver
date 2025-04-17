@@ -91,7 +91,11 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
     altruist_count = sum(1 for cycle in optimal_cycles if cycle.is_chain)
     altruist_nodes = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if node.is_altruist)
     
-    highly_sensitised_count = sum(1 for patient in pool.patients.values() if patient.cpra > 0.85)
+    highly_sensitised_count = sum(
+        1 for patient in pool.patients.values()
+        if patient.cpra is not None
+        if patient.cpra > 0.85
+    )    
     with open(filename, 'w') as file:
         file.write("Final Chosen Optimal Exchanges\n")
         file.write(f"\nTotal number of nodes: {total_nodes}")

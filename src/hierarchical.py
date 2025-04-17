@@ -56,11 +56,6 @@ class HierarchicalOptimiser(object):
         for altruist in pool.altruists:
             print(altruist.id)
             altruist.mip_unmatched = self.model.addVar(vtype=GRB.BINARY, name=f'unmatched_altruist_{altruist.id}')
-            # # first find all cycles that contain this altruistic donor
-            # cycles_with_altruist = []
-            # for cycle in self.cycles:
-            #     if any(node.donor.id == altruist.id and node.is_altruist for node in cycle.donor_patient_nodes):
-            #         cycles_with_altruist.append(cycle)
             self.model.addConstr(
                 altruist.mip_unmatched + quicksum(altruist.mip_vars) == 1,
                 name=f'altruist_constraint_{altruist.id}')
@@ -72,7 +67,6 @@ class HierarchicalOptimiser(object):
 
     def optimise(self, pool, constraint_list):
         self._add_mip_vars_and_constraints(pool)
-
 
         self.model.ModelSense = GRB.MAXIMIZE 
         self.model.update()
@@ -109,7 +103,7 @@ class HierarchicalOptimiser(object):
 
             selected_cycles = [cycle for cycle in self.cycles if cycle.mip_var.Xn > 0.5]
             all_selected_cycles.append(selected_cycles)
-
+            
         return optimal_cycles, all_selected_cycles
 
     def run_gurobi_cycle_finder(self, donor_patient_nodes):

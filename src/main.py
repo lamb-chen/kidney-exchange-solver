@@ -21,6 +21,7 @@ if __name__ == "__main__":
 
     print("Finding cycles..\n")
     cycles, found_cycles_printable = johnsons.johnsons(pool.donor_patient_nodes, 3)
+    print(found_cycles_printable)
     print("Cycle objects created.\n")
 
     # start = time.perf_counter()
@@ -49,8 +50,6 @@ if __name__ == "__main__":
     print("Finished plotting graphs.\n")
 
     # print(f"time taken: {total}")
-
-
 
     # print("Running Weighted Sum solver...\n")
     # g_solver = weightedsum.WeightedSumOptimiser(pool, cycles)

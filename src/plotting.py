@@ -15,23 +15,21 @@ class Plot():
     def _plot_selected_cycles(self):
         colour = '#faa7a7'
         for cycle in self.optimal_cycles:
+            dp_nodes = cycle.donor_patient_nodes
             last_node = None  
+            if cycle.is_chain:
+                alt_idx = None
 
-            for _, node in enumerate(cycle.donor_patient_nodes):
-                if node.is_altruist:
-                    node_id = f"{node.donor.id}"
-                    if node_id not in self.selected_nodes:
-                        self.selected_graph.add_node(node_id, label=node_id, color=colour)
-                        self.selected_nodes.add(node_id)
-
-                    # altruist node must not have ingoing edges
-                    if last_node is not None:
-                        last_node_id = f"{last_node.donor.id}" if last_node.is_altruist else f"{last_node.donor.id}, {last_node.patient.id}"
-                        self.selected_graph.add_edge(node_id, last_node_id, color=colour)
-                        self.selected_edges.add((node_id, last_node_id))
-
-                else:
+                # first find altruist index
+                for i, node in enumerate(dp_nodes):
+                    if node.is_altruist:
+                        alt_idx = i
+                
+                for i in range(alt_idx, alt_idx + len(dp_nodes)):
+                    node = dp_nodes[i % len(dp_nodes)]
                     node_id = f"{node.donor.id}, {node.patient.id}"
+                    if node.is_altruist:
+                        node_id = f"{node.donor.id}"
                     if node_id not in self.selected_nodes:
                         self.selected_graph.add_node(node_id, label=node_id, color=colour)
                         self.selected_nodes.add(node_id)
@@ -42,12 +40,24 @@ class Plot():
                             last_node_id = f"{last_node.donor.id}"
                         self.selected_graph.add_edge(last_node_id, node_id, color=colour)
                         self.selected_edges.add((last_node_id, node_id))
+                    last_node = node
 
-                last_node = node  
+            else:
+                for _, node in enumerate(dp_nodes):
+                    node_id = f"{node.donor.id}, {node.patient.id}"
+                    if node_id not in self.selected_nodes:
+                        self.selected_graph.add_node(node_id, label=node_id, color=colour)
+                        self.selected_nodes.add(node_id)
 
-            # if cycle is meant to be a chain don't add edge from last to first node i.e. complete cycle 
-            if not cycle.is_chain:
-                first_node = cycle.donor_patient_nodes[0]
+                    if last_node is not None:
+                        last_node_id = f"{last_node.donor.id}, {last_node.patient.id}"
+                        self.selected_graph.add_edge(last_node_id, node_id, color=colour)
+                        self.selected_edges.add((last_node_id, node_id))
+
+                    last_node = node  
+                # add edge from last to first node i.e. complete cycle 
+
+                first_node = dp_nodes[0]
                 last_node_id = f"{last_node.donor.id}" if last_node.is_altruist else f"{last_node.donor.id}, {last_node.patient.id}"
                 first_node_id = f"{first_node.donor.id}" if first_node.is_altruist else f"{first_node.donor.id}, {first_node.patient.id}"
                 self.selected_graph.add_edge(last_node_id, first_node_id, color = colour)

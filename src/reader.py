@@ -58,14 +58,15 @@ class JSONReader(object):
                 
                 pool.add_edges_to_nodes()
 
-                recipient_patient_data = all_json_data["recipients"]
+                if "recipients" in all_json_data:
+                    recipient_patient_data = all_json_data["recipients"]
 
-                for patient_id in recipient_patient_data:
-                    patient_info = recipient_patient_data[patient_id]
-                    patient_object = pool.patients[int(patient_id)]
-                    patient_object.set_cpra(patient_info["cPRA"])
-                    patient_object.set_blood_type(patient_info["bloodtype"])
-                
+                    for patient_id in recipient_patient_data:
+                        patient_info = recipient_patient_data[patient_id]
+                        patient_object = pool.patients[int(patient_id)]
+                        patient_object.set_cpra(patient_info["cPRA"])
+                        patient_object.set_blood_type(patient_info["bloodtype"])
+                    
                 return pool
             
         except FileNotFoundError:

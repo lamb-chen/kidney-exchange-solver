@@ -43,7 +43,7 @@ class MaxBackarcs():
         return cycle.find_num_of_backarcs()
 
     def altruist_val(self):
-        return 1
+        return 0
     
 class MaxOverallWeight():
     def __init__(self):
