@@ -33,7 +33,8 @@ The program has 3 types of output:
 1) Printed output in the terminal
 2) A .txt file containing the selected optimal exchanges. In addition this includes other solutions that were not chosen.
 3) A .txt file containing the final objective function values for each objective in each solution (including the ones that were not chosen).
-4) HTML file containing a graphical visualisation of the original graph and with the chosen optimal exchanges highlighted. 
+4) HTML file containing a graphical visualisation of the original graph and with the chosen optimal exchanges highlighted.
+
 Example small instance graph:    
 <img src="https://github.com/lamb-chen/kidney-exchange-solver/blob/main/resources/small_instance_2.png" width="300">  
 
