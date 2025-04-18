@@ -13,17 +13,19 @@ Note: a license must be accquired. This project was created with the free academ
 ## How to run
 Command:
 ```
-python main.py -f="filename" -w="y" -c=3
+python main.py -f="filename" -l="y" -c=3
 ```
-The above command runs the weighted_sum version of the solver on the dataset specified by the filename (must be JSON), and has a maximum cycle length of 3.   
-To run the hierarchical version, use `-w="n"` instead.   
+The above command runs the lexcographical/hierarchical version of the solver on the dataset specified by the filename (must be JSON), and has a maximum cycle length of 3.   
+To run the weighted sum version, use `-l="n"` instead.   
 
 ```
 All Flag Options:
   -h, --help            show this help message and exit
   -f FILE, --file FILE  Input file name
-  -w WEIGHTED_SUM, --weighted_sum WEIGHTED_SUM
-                        y/n, no means solver will run hierarchical optimisation
+  -l LEX, --lex LEX     y/n, yes will run lexcographic/hierarchical optimisation, no means solver will run weighted sum optimisation
+  -w WEIGHTS, --weights WEIGHTS
+                        List of 5 weights for each criteria e.g., '--weights 0.1 0.2 0.7' or '--weights 0.1,0.2,0.7' The order corresponds to the order of the criteria: MAX_WEIGHT, MIN_THREE_CYCLES, MAX_BACKARCS, MAX_SIZE,
+                        MAX_TWO_CYCLES
   -c CYCLE, --cycle CYCLE
                         Maximum cycle length
 ```
