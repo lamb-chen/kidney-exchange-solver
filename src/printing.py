@@ -91,6 +91,8 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
     total_num_of_altruists = len(pool.altruists)
     selected_altruist_count = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if node.is_altruist)
 
+    selected_node_count = selected_patient_count + selected_altruist_count
+
     total_cycles = sum(1 for cycle in pool.all_cycles if not cycle.is_chain)
     selected_cycle_count = sum(1 for cycle in optimal_cycles if not cycle.is_chain)
 
@@ -102,6 +104,8 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
 
     total_chains = sum(1 for cycle in pool.all_cycles if cycle.is_chain)
     selected_chains = sum(1 for cycle in optimal_cycles if cycle.is_chain)
+    selected_three_chains = sum(1 for cycle in optimal_cycles if cycle.is_chain and cycle.length == 3)
+    selected_two_chains = sum(1 for cycle in optimal_cycles if cycle.is_chain and cycle.length == 2)
 
     # total_weight = sum(cycle.get_cycle_weight() for cycle in pool.cycles)
     selected_exchanges_weight = sum(cycle.get_cycle_weight() for cycle in optimal_cycles)
@@ -122,11 +126,15 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
     with open(filename, 'w') as file:
         file.write("Final Chosen Optimal Exchanges\n")
 
-        file.write(f"\nTotal potential nodes: {total_nodes}")
-        file.write(f"\nTotal number of patients: {total_num_of_patients}")
+        file.write(f"\nFinal optimal exchange set weight: {selected_exchanges_weight}")    
+
+        file.write(f"\n\nTotal potential nodes: {total_nodes}")
+        file.write(f"\nNumber of selected nodes: {selected_node_count}")
+
+        file.write(f"\n\nTotal number of patients: {total_num_of_patients}")
         file.write(f"\nNumber of selected patients: {selected_patient_count}")
-        file.write(f"\nTotal number of donors: {total_num_of_donors}")
-        file.write(f"\nNumber of selected donors: {selected_donor_count}")
+        file.write(f"\nTotal number of non-altruistic donors: {total_num_of_donors}")
+        file.write(f"\nNumber of selected non-altruistic donors: {selected_donor_count}")
         file.write(f"\nTotal number of altruists: {total_num_of_altruists}")
         file.write(f"\nNumber of selected altruists: {selected_altruist_count}") 
         file.write(f"\nTotal number of highly sensitised patients: {total_highly_sensitised_count}")
@@ -137,17 +145,18 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
         file.write(f"\nTotal potential three-cycles: {total_three_cycles}")
         file.write(f"\nNumber of selected three-cycles: {selected_three_cycles}")        
         file.write(f"\nTotal potential two-cycles: {total_two_cycles}")
-        file.write(f"\nNumber of selected two-cycles: {selected_two_cycles}")        
-        file.write(f"\nTotal potential chains: {total_chains}")
-        file.write(f"\nNumber of selected chains: {selected_chains}")   
-        file.write(f"\nNOTE: Cycles and chains here are differentiated once again.\nCycles does not include pseudo-cycles.")
+        file.write(f"\nNumber of selected two-cycles: {selected_two_cycles}") 
 
         file.write(f"\n\nNumber of backarcs in final exchange set: {selected_num_of_backarcs}")        
 
+        file.write(f"\n\nTotal potential chains: {total_chains}")
+        file.write(f"\nNumber of selected chains: {selected_chains}")   
+        file.write(f"\nNumber of selected three-length chains: {selected_three_chains}") 
+        file.write(f"\nNumber of selected two-length chains: {selected_two_chains}") 
 
-        file.write(f"\n\nFinal optimal exchange set weight: {selected_exchanges_weight}")    
+        file.write(f"\n\nNOTE: Cycles and chains here are differentiated once again.\nCycles does not include pseudo-cycles.")
 
-        file.write(f"\nSelected Cycles: \n")
+        file.write(f"\n\nSelected Cycles: \n")
         for cycle in optimal_cycles:
             file.write(f"   Cycle {cycle.index}:\n")
             for node in cycle.donor_patient_nodes:
