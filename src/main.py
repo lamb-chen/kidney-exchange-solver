@@ -71,6 +71,7 @@ if __name__ == "__main__":
         # total = end - start
 
         # print(f"time taken: {total}")
+
         if args.lex == "n":
             print("Running Weighted Sum solver...\n")
             g_solver = weightedsum.WeightedSumOptimiser(pool, cycles, weights_list)
@@ -108,7 +109,7 @@ if __name__ == "__main__":
             plotter.plot_graph()
             print("Finished plotting graphs.\n")
         else:
-            print('Must put "y" or "n" for weighted sum')
+            print('Must put "y" or "n" for --lex')
 
     else:
         print("Input file must be in valid JSON format")

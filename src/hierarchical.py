@@ -75,9 +75,9 @@ class HierarchicalOptimiser(object):
 
         for i in range(len(final_constraints)):
             if constraint_list[i//2] == "MIN_THREE_CYCLES":
-                self.model.setObjectiveN(-quicksum(final_constraints[i]), index=i, weight=1.0, priority=i, name=f"objective_{i}")        
+                self.model.setObjectiveN(-quicksum(final_constraints[i]), index=i, weight=1.0, priority=i, name=f"{constraint_list[i//2]}_{i}")        
             else:
-                self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, weight=1.0, priority=i, name=f"objective_{i}")        
+                self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, weight=1.0, priority=i, name=f"{constraint_list[i//2]}_{i}")        
                 
         self.model.optimize()
 

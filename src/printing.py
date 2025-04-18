@@ -84,6 +84,10 @@ def write_solution_obj_values(model, cycles, filename):
         nSolutions  = model.SolCount
         nObjectives = model.NumObj
         file.write(f"Gurobi found {nSolutions} solutions\n")
+        file.write(f"\nGurobi optimises hierarchical solutions from highest priority to lowest.\n")
+        file.write(f"Hence, Objective 1 is optimised for before Objective 0.\n")
+        file.write(f"Objectives with an even index are for the cycles.\n")
+        file.write(f"Objectives with an odd index are for the altruists.\n")
         for s in range(nSolutions):
             # setting which solution to be queried in this loop
             model.params.SolutionNumber = s
@@ -107,13 +111,21 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
     total_num_of_patients = len(pool.patients)
     selected_patient_count = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if not node.is_altruist)
     
-    total_num_of_donors = len(pool.patients)
+    seen = set()
+    total_num_of_donors = 0
+    for node in pool.donor_patient_nodes:
+        if not node.is_altruist and node.donor.id not in seen:
+            seen.add(node.donor.id)
+            total_num_of_donors += 1
+
     selected_donor_count = selected_patient_count
 
     total_num_of_altruists = len(pool.altruists)
     selected_altruist_count = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if node.is_altruist)
-
+    unmatched_altruist_count = total_num_of_altruists - selected_altruist_count
+    
     selected_node_count = selected_patient_count + selected_altruist_count
+    total_transplants = selected_patient_count + total_num_of_altruists
 
     total_cycles = sum(1 for cycle in pool.all_cycles if not cycle.is_chain)
     selected_cycle_count = sum(1 for cycle in optimal_cycles if not cycle.is_chain)
@@ -130,7 +142,7 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
     selected_two_chains = sum(1 for cycle in optimal_cycles if cycle.is_chain and cycle.length == 2)
 
     # total_weight = sum(cycle.get_cycle_weight() for cycle in pool.cycles)
-    selected_exchanges_weight = sum(cycle.get_cycle_weight() for cycle in optimal_cycles)
+    selected_exchanges_weight = sum(cycle.get_cycle_weight() for cycle in optimal_cycles) + unmatched_altruist_count
 
     selected_num_of_backarcs = sum(cycle.find_num_of_backarcs() for cycle in optimal_cycles)
 
@@ -148,10 +160,11 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
     with open(filename, 'w') as file:
         file.write("Final Chosen Optimal Exchanges\n")
 
-        file.write(f"\nFinal optimal exchange set weight: {selected_exchanges_weight}")    
+        file.write(f"\nIdentified exchange set weight*: {selected_exchanges_weight}")    
 
         file.write(f"\n\nTotal potential nodes: {total_nodes}")
         file.write(f"\nNumber of selected nodes: {selected_node_count}")
+        file.write(f"\nNumber of selected transplants*: {total_transplants}")
         file.write(f"\nTotal edges: {total_edges}")    
 
         file.write(f"\n\nTotal number of patients: {total_num_of_patients}")
@@ -159,7 +172,8 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
         file.write(f"\nTotal number of non-altruistic donors: {total_num_of_donors}")
         file.write(f"\nNumber of selected non-altruistic donors: {selected_donor_count}")
         file.write(f"\nTotal number of altruists: {total_num_of_altruists}")
-        file.write(f"\nNumber of selected altruists: {selected_altruist_count}") 
+        file.write(f"\nNumber of matched altruists: {selected_altruist_count}") 
+        file.write(f"\nNumber of unmatched altruists: {unmatched_altruist_count}") 
         file.write(f"\nTotal number of highly sensitised patients: {total_highly_sensitised_count}")
         file.write(f"\nNumber of selected highly sensitised patients: {selected_highly_sensitised_count}")   
 
@@ -178,7 +192,7 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
         file.write(f"\nNumber of selected two-length chains: {selected_two_chains}") 
 
         file.write(f"\n\nNOTE: Cycles and chains here are differentiated once again.\nCycles does not include pseudo-cycles.")
-
+        file.write(f"\n*also including unmatched altruists who would be donating to DDWL)\n")
         file.write(f"\n\nSelected Cycles: \n")
         for cycle in optimal_cycles:
             file.write(f"   Cycle {cycle.index}:\n")
