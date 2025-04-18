@@ -192,7 +192,7 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
         file.write(f"\nNumber of selected two-length chains: {selected_two_chains}") 
 
         file.write(f"\n\nNOTE: Cycles and chains here are differentiated once again.\nCycles does not include pseudo-cycles.")
-        file.write(f"\n*also including unmatched altruists who would be donating to DDWL)\n")
+        file.write(f"\n*also including unmatched altruists who would be donating to DDWL\n")
         file.write(f"\n\nSelected Cycles: \n")
         for cycle in optimal_cycles:
             file.write(f"   Cycle {cycle.index}:\n")

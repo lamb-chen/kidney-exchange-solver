@@ -87,14 +87,14 @@ class WeightedSumOptimiser(object):
             else:
                 self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, priority=0, name=f"{constraint_list[i//2]}_{i}")     
         self.model.update()
-        self.model.Params.ObjNumber = self.model.NumObj
-
-        for i in range(len(self.weights)):
-            self.model.Params.ObjNumber = i
+        
+        for i in range(0, self.model.NumObj//2):
+            self.model.Params.ObjNumber = 2 * i
             self.model.ObjNWeight = self.weights[i]
-            self.model.Params.ObjNumber = i + 1
+            self.model.Params.ObjNumber = (2 * i) + 1
             self.model.ObjNWeight = self.weights[i]
 
+        self.model.update()
         self.model.optimize()
         assert self.model.Status == GRB.Status.OPTIMAL, "Model did not find an optimal solution."
         optimal_cycles = self._exchanges_in_optimal_solution(self.cycles)
