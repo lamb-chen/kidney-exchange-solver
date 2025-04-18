@@ -13,7 +13,7 @@ Note: a license must be accquired. This project was created with the free academ
 ## How to run
 Command:
 ```
-python main.py -f="filename" -l="n" -w=0.1,1,0.1,0.1,0.1 -c=3
+python main.py -f="filename" -l="n" -w="0.1,1,0.1,0.1,0.1" -c=3
 ```
 The above command runs the weighted sum version of the solver on the dataset specified by the filename (must be JSON), and has a maximum cycle length of 3. The weightings used for each objective function in the weighted sum solver are based on the weight list provided [0.1, 1, 0.1, 0.1, 0.1].
 To run the lexcographical/hierarchical version, use `-l="y"` instead.   
