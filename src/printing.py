@@ -78,6 +78,27 @@ def write_all_solutions_to_file(optimal_cycles, all_selected_cycles, filename):
         else:
             file.write("No cycles selected in this solution.\n")
 
+def write_solution_obj_values(model, cycles, filename):
+    all_selected_cycles = []
+    with open(filename, 'w') as file:
+        nSolutions  = model.SolCount
+        nObjectives = model.NumObj
+        file.write(f"Gurobi found {nSolutions} solutions\n")
+        for s in range(nSolutions):
+            # setting which solution to be queried in this loop
+            model.params.SolutionNumber = s
+
+            file.write(f"\nSolution {s}: ")
+            for o in range(nObjectives):
+                # set which objective to query
+                model.params.ObjNumber = o
+                # query this o-th obj val and print name
+                file.write(f"{model.ObjNName}: {model.ObjNVal},  ")
+
+            selected_cycles = [cycle for cycle in cycles if cycle.mip_var.Xn > 0.5]
+            all_selected_cycles.append(selected_cycles)
+    return all_selected_cycles
+
 def write_optimal_solution_results(optimal_cycles, pool, filename):
     # donors here refers to non-altruistic donors
     total_nodes = len(pool.donor_patient_nodes)

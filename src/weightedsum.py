@@ -1,5 +1,6 @@
 from gurobipy import *
 import criteria
+import printing
 
 class WeightedSumOptimiser(object):
     def __init__(self, pool, cycles):
@@ -58,6 +59,7 @@ class WeightedSumOptimiser(object):
         self.model.update()
 
     def optimise(self, pool, constraint_list):
+        self.model.setParam('OutputFlag', 0)
         self._add_mip_vars_and_constraints(pool)
         # paper has constraint s.t. where altruist mip var is 1 if they are unmatched
         # and 0 if they are matched in a cycle so they are not double counted
@@ -97,25 +99,7 @@ class WeightedSumOptimiser(object):
         assert self.model.Status == GRB.Status.OPTIMAL, "Model did not find an optimal solution."
         optimal_cycles = self._exchanges_in_optimal_solution(self.cycles)
         
-        # this bit is for analysing all the potential solutions
-        nSolutions  = self.model.SolCount
-        nObjectives = self.model.NumObj
-        print('Gurobi found', nSolutions, 'solutions')
-
-        all_selected_cycles = []
-        for s in range(nSolutions):
-            # setting which solution to be queried in this loop
-            self.model.params.SolutionNumber = s
-
-            print('\nSolution', s, ':', end='')
-            for o in range(nObjectives):
-                # set which objective to query
-                self.model.params.ObjNumber = o
-                # query this o-th obj val and print name
-                print(' ', self.model.ObjNName, self.model.ObjNVal, end='')
-
-            selected_cycles = [cycle for cycle in self.cycles if cycle.mip_var.Xn > 0.5]
-            all_selected_cycles.append(selected_cycles)
+        all_selected_cycles = printing.write_solution_obj_values(self.model, self.cycles, "./output/weighted_sum_solution_obj_values.txt")
 
         return optimal_cycles, all_selected_cycles
 

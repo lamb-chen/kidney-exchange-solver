@@ -65,6 +65,7 @@ class HierarchicalOptimiser(object):
         self.model.update()
 
     def optimise(self, pool, constraint_list):
+        self.model.setParam('OutputFlag', 0)
         self._add_mip_vars_and_constraints(pool)
 
         self.model.ModelSense = GRB.MAXIMIZE 
@@ -83,26 +84,8 @@ class HierarchicalOptimiser(object):
         assert self.model.Status == GRB.Status.OPTIMAL, "Model did not find an optimal solution."
         optimal_cycles = self._exchanges_in_optimal_solution(self.cycles)
         
-        # this bit is for analysing all the potential solutions
-        nSolutions  = self.model.SolCount
-        nObjectives = self.model.NumObj
-        print('Gurobi found', nSolutions, 'solutions')
+        all_selected_cycles = printing.write_solution_obj_values(self.model, self.cycles, "./output/hierarchical_solution_obj_values.txt")
 
-        all_selected_cycles = []
-        for s in range(nSolutions):
-            # setting which solution to be queried in this loop
-            self.model.params.SolutionNumber = s
-
-            print('\nSolution', s, ':', end='')
-            for o in range(nObjectives):
-                # set which objective to query
-                self.model.params.ObjNumber = o
-                # query this o-th obj val and print name
-                print(' ', self.model.ObjNName, self.model.ObjNVal, end='')
-
-            selected_cycles = [cycle for cycle in self.cycles if cycle.mip_var.Xn > 0.5]
-            all_selected_cycles.append(selected_cycles)
-            
         return optimal_cycles, all_selected_cycles
 
     def run_gurobi_cycle_finder(self, donor_patient_nodes):
