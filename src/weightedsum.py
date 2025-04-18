@@ -3,10 +3,11 @@ import criteria
 import printing
 
 class WeightedSumOptimiser(object):
-    def __init__(self, pool, cycles):
+    def __init__(self, pool, cycles, weights_list):
         self.model = Model()
         self.pool = pool
         self.cycles = cycles
+        self.weights = weights_list
         
     def _exchanges_in_optimal_solution(self, items):
             return [item for item in items if item.mip_var.X > 0.5]
@@ -86,14 +87,13 @@ class WeightedSumOptimiser(object):
             else:
                 self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, priority=0, name=f"objective_{i}")     
         self.model.update()
-        weights_list = [0.1, 0.9, 0.1, 0.1, 0.1]
         self.model.Params.ObjNumber = self.model.NumObj
 
-        for i in range(len(weights_list)):
+        for i in range(len(self.weights)):
             self.model.Params.ObjNumber = i
-            self.model.ObjNWeight = weights_list[i]
+            self.model.ObjNWeight = self.weights[i]
             self.model.Params.ObjNumber = i + 1
-            self.model.ObjNWeight = weights_list[i]
+            self.model.ObjNWeight = self.weights[i]
 
         self.model.optimize()
         assert self.model.Status == GRB.Status.OPTIMAL, "Model did not find an optimal solution."

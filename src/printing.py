@@ -102,7 +102,8 @@ def write_solution_obj_values(model, cycles, filename):
 def write_optimal_solution_results(optimal_cycles, pool, filename):
     # donors here refers to non-altruistic donors
     total_nodes = len(pool.donor_patient_nodes)
-    
+    total_edges = sum(1 for dp_node in pool.donor_patient_nodes for edge in dp_node.out_edges if not edge.donor_recipient_node.is_altruist)
+
     total_num_of_patients = len(pool.patients)
     selected_patient_count = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if not node.is_altruist)
     
@@ -151,6 +152,7 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
 
         file.write(f"\n\nTotal potential nodes: {total_nodes}")
         file.write(f"\nNumber of selected nodes: {selected_node_count}")
+        file.write(f"\nTotal edges: {total_edges}")    
 
         file.write(f"\n\nTotal number of patients: {total_num_of_patients}")
         file.write(f"\nNumber of selected patients: {selected_patient_count}")
