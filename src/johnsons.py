@@ -49,7 +49,7 @@ def tarjans_algorithm(donor_patient_nodes):
         for node in scc:
             curr_scc.append((node.donor.id, node.patient.id))
         scc_printable_list.append(curr_scc)
-    print(scc_printable_list)
+
     return sccs, scc_printable_list
 
 

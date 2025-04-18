@@ -54,7 +54,6 @@ class HierarchicalOptimiser(object):
         # and 0 if they are matched in a cycle so they are not double counted
         # altruist can be added to create a dpd chain, or donate to the deceased donor pool
         for altruist in pool.altruists:
-            print(altruist.id)
             altruist.mip_unmatched = self.model.addVar(vtype=GRB.BINARY, name=f'unmatched_altruist_{altruist.id}')
             self.model.addConstr(
                 altruist.mip_unmatched + quicksum(altruist.mip_vars) == 1,

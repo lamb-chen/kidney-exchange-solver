@@ -79,40 +79,75 @@ def write_all_solutions_to_file(optimal_cycles, all_selected_cycles, filename):
             file.write("No cycles selected in this solution.\n")
 
 def write_optimal_solution_results(optimal_cycles, pool, filename):
+    # donors here refers to non-altruistic donors
     total_nodes = len(pool.donor_patient_nodes)
-    total_num_of_donors = sum(1 for node in pool.donor_patient_nodes if not node.is_altruist)
-    total_num_of_patients = len(pool.patients)
-    total_num_of_altruists = len(pool.altruists)
-    total_cycles = len(optimal_cycles)
-    total_weight = sum(cycle.get_cycle_weight() for cycle in optimal_cycles)
-    total_num_of_backarcs = sum(cycle.find_num_of_backarcs() for cycle in optimal_cycles)
-
-    two_cycle_count = sum(1 for cycle in optimal_cycles if cycle.length == 2)
-    three_cycle_count = sum(1 for cycle in optimal_cycles if cycle.length == 3)
-    altruist_count = sum(1 for cycle in optimal_cycles if cycle.is_chain)
-    altruist_nodes = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if node.is_altruist)
     
-    highly_sensitised_count = sum(
+    total_num_of_patients = len(pool.patients)
+    selected_patient_count = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if not node.is_altruist)
+    
+    total_num_of_donors = len(pool.patients)
+    selected_donor_count = selected_patient_count
+
+    total_num_of_altruists = len(pool.altruists)
+    selected_altruist_count = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if node.is_altruist)
+
+    total_cycles = sum(1 for cycle in pool.all_cycles if not cycle.is_chain)
+    selected_cycle_count = sum(1 for cycle in optimal_cycles if not cycle.is_chain)
+
+    total_three_cycles = sum(1 for cycle in pool.all_cycles if cycle.length == 3 and not cycle.is_chain)
+    selected_three_cycles = sum(1 for cycle in optimal_cycles if cycle.length == 3 and not cycle.is_chain)
+
+    total_two_cycles = sum(1 for cycle in pool.all_cycles if cycle.length == 2 and not cycle.is_chain)
+    selected_two_cycles = sum(1 for cycle in optimal_cycles if cycle.length == 2 and not cycle.is_chain)
+
+    total_chains = sum(1 for cycle in pool.all_cycles if cycle.is_chain)
+    selected_chains = sum(1 for cycle in optimal_cycles if cycle.is_chain)
+
+    # total_weight = sum(cycle.get_cycle_weight() for cycle in pool.cycles)
+    selected_exchanges_weight = sum(cycle.get_cycle_weight() for cycle in optimal_cycles)
+
+    selected_num_of_backarcs = sum(cycle.find_num_of_backarcs() for cycle in optimal_cycles)
+
+    total_highly_sensitised_count = sum(
         1 for patient in pool.patients.values()
         if patient.cpra is not None
         if patient.cpra > 0.85
-    )    
+    )
+
+    selected_highly_sensitised_count = sum(
+        1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes 
+        if node.patient.cpra is not None
+        if node.patient.cpra > 0.85
+    )       
     with open(filename, 'w') as file:
         file.write("Final Chosen Optimal Exchanges\n")
-        file.write(f"\nTotal number of nodes: {total_nodes}")
-        file.write(f"\nTotal number of donors: {total_num_of_donors}")
+
+        file.write(f"\nTotal potential nodes: {total_nodes}")
         file.write(f"\nTotal number of patients: {total_num_of_patients}")
-        file.write(f"\nTotal number of highly sensitised patients: {highly_sensitised_count}")
+        file.write(f"\nNumber of selected patients: {selected_patient_count}")
+        file.write(f"\nTotal number of donors: {total_num_of_donors}")
+        file.write(f"\nNumber of selected donors: {selected_donor_count}")
         file.write(f"\nTotal number of altruists: {total_num_of_altruists}")
-        file.write(f"\nTotal number of cycles: {total_cycles}")
-        file.write(f"\nTotal weight of cycles: {total_weight}")
-        file.write(f"\nTotal number of backarcs: {total_num_of_backarcs}")
-        file.write(f"\nTotal number of altruists: {altruist_count}")
-        file.write(f"\nTotal number of altruist nodes: {altruist_nodes}")
-        file.write(f"\nTotal number of two cycles: {two_cycle_count}")
-        file.write(f"\nTotal number of three cycles: {three_cycle_count}")
-        file.write(f"\n###################################################################################\n")
-        file.write(f"Selected Cycles: \n")
+        file.write(f"\nNumber of selected altruists: {selected_altruist_count}") 
+        file.write(f"\nTotal number of highly sensitised patients: {total_highly_sensitised_count}")
+        file.write(f"\nNumber of selected highly sensitised patients: {selected_highly_sensitised_count}")   
+
+        file.write(f"\n\nTotal potential cycles: {total_cycles}")
+        file.write(f"\nNumber of selected cycles: {selected_cycle_count}")        
+        file.write(f"\nTotal potential three-cycles: {total_three_cycles}")
+        file.write(f"\nNumber of selected three-cycles: {selected_three_cycles}")        
+        file.write(f"\nTotal potential two-cycles: {total_two_cycles}")
+        file.write(f"\nNumber of selected two-cycles: {selected_two_cycles}")        
+        file.write(f"\nTotal potential chains: {total_chains}")
+        file.write(f"\nNumber of selected chains: {selected_chains}")   
+        file.write(f"\nNOTE: Cycles and chains here are differentiated once again.\nCycles does not include pseudo-cycles.")
+
+        file.write(f"\n\nNumber of backarcs in final exchange set: {selected_num_of_backarcs}")        
+
+
+        file.write(f"\n\nFinal optimal exchange set weight: {selected_exchanges_weight}")    
+
+        file.write(f"\nSelected Cycles: \n")
         for cycle in optimal_cycles:
             file.write(f"   Cycle {cycle.index}:\n")
             for node in cycle.donor_patient_nodes:

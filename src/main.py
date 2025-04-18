@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
         print("Finding cycles..\n")
         cycles, found_cycles_printable = johnsons.johnsons(pool.donor_patient_nodes, max_cycle_length)
-        print(found_cycles_printable)
+        pool.all_cycles = cycles
         print("Cycle objects created.\n")
 
         # start = time.perf_counter()

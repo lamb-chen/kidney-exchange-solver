@@ -105,6 +105,7 @@ class Pool():
         self.patients = {}
         self.donor_patient_nodes = []
         self.altruists = []
+        self.all_cycles = None
 
     # def add_patient(self, patient):
     #     self.patients.append(patient)
