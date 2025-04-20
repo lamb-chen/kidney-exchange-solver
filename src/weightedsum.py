@@ -104,7 +104,7 @@ class WeightedSumOptimiser(object):
         return optimal_cycles, all_selected_cycles
 
     # this function was for testing the pool's find cycles function was correct
-    def run_gurobi_cycle_finder(self, donor_patient_nodes):
+    def gurobi_find_two_cycles(self, donor_patient_nodes):
         edges = []
         for node in donor_patient_nodes:
             u = (node.donor.id, node.patient.id)
@@ -136,7 +136,20 @@ class WeightedSumOptimiser(object):
                     if curr_set not in seen:
                         seen.add(curr_set)
                         two_cycles_list.append((u, v))  
+                        
+        return two_cycles_list
 
+    def gurobi_find_three_cycles(self, donor_patient_nodes):
+        edges = []
+        for node in donor_patient_nodes:
+            u = (node.donor.id, node.patient.id)
+            for e in node.out_edges:
+                target_node = e.donor_recipient_node
+                v = (target_node.donor.id, int(target_node.patient.id))
+                edges.append((u, v))
+
+        var_edges = self.model.addVars(edges, vtype=GRB.BINARY, name="edge")
+        
         three_cycles = []
         for u, v in edges:
             for w in donor_patient_nodes:
@@ -165,4 +178,4 @@ class WeightedSumOptimiser(object):
                 if var_edges[u, v].X > 0.5 and var_edges[v, w].X > 0.5 and var_edges[w, u].X > 0.5:
                     three_cycles_list.append((u, v, w)) 
 
-        return two_cycles_list, three_cycles_list
+        return three_cycles_list

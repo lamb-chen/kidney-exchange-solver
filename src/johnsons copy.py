@@ -6,15 +6,15 @@ import pool
 def tarjans_algorithm(donor_patient_nodes):
     sccs = []
     dfs_index = 0
-    seen = deque()
+    stack = deque()
     in_seen = [False] * len(donor_patient_nodes)
 
     def strong_connect(node):
         nonlocal dfs_index
         node.set_index(dfs_index)
-        node.low_link_value = dfs_index
-        seen.append(node)
-        in_seen[dfs_index] = True
+        node.low_link_value = node.index
+        stack.append(node)
+        in_seen[node.index] = True
         dfs_index += 1
 
         for edge in node.out_edges:
@@ -29,13 +29,15 @@ def tarjans_algorithm(donor_patient_nodes):
         if node.low_link_value == node.index:
             component = []
             while True:
-                stack_node = seen.pop()
+                stack_node = stack.pop()
                 in_seen[stack_node.index] = False
                 component.append(stack_node)
-                if stack_node.index <= node.index:
+                if stack_node.index == node.index:
                     break
             sccs.append(component)
 
+    for node in donor_patient_nodes:
+        node.set_index(None)
 
     for node in donor_patient_nodes:
         if node.index is None:
@@ -51,79 +53,83 @@ def tarjans_algorithm(donor_patient_nodes):
     return sccs, scc_printable_list
 
 
-def johnsons(donor_patient_nodes, max_cycle_length):
-    found_cycles = []
+def og_johnsons(scc, max_cycle_length):
     # removed is used to track what node has been "removed" from each 
     # iteration of johnsons for each SCC
     # this is instead of creating a new graph without the node "s" (referring to his paper)
     # use tarjans algorithm to find strongly connected components
     # and then find cycles within each component
     def unblock(node):
-        is_blocked[node.index] = False
-        for blocking_node_index in blocked_map[node.index].copy():
-            blocked_map[node.index].remove(blocking_node_index)
-            if is_blocked[blocking_node_index]:
-                unblock(id_to_node[blocking_node_index])
+        blocked_set.remove(node)
+        for blocking_node in blocked_map[node].copy():
+            blocked_map[node].remove(blocking_node)
+            if blocking_node in blocked_set:
+                unblock(blocking_node)
 
     def circuit(node, max_cycle_length, start_node_idx):
         f = False
         stack.append(node)
-        is_blocked[node.index] = True
+        blocked_set.add(node)
 
         for edge in node.out_edges:
             target_node = edge.donor_recipient_node
-            if removed[target_node.index]:
+            if target_node in removed:
                 continue
             if target_node.index == start_node_idx:
                 if len(stack) > 1 and len(stack) <= max_cycle_length:
-                    has_altruist = False
-                    for node in stack:
-                        if node.is_altruist:
-                            has_altruist = True
+                    has_altruist = any(node.is_altruist for node in stack)
                     cycle_obj = pool.Cycle(list(stack), len(stack), len(found_cycles), has_altruist)
                     found_cycles.append(cycle_obj)
                     f = True
-            elif not is_blocked[target_node.index] and len(stack) < max_cycle_length:
+            elif not blocked_set.add(target_node.index) and len(stack) < max_cycle_length:
                     if circuit(target_node, max_cycle_length, start_node_idx):
                         f = True
         if f:
             unblock(node)
         else:
             for edge in node.out_edges:
-                
                 target_node = edge.donor_recipient_node
-                if removed[target_node.index]:
-                    continue
-                if node.index not in blocked_map[target_node.index]:
-                    blocked_map[target_node.index].add(node.index)
+                if not removed[target_node] and node not in blocked_map[target_node]:
+                    blocked_map[target_node].add(node)
         stack.pop()
         return f
+    found_cycles = []
+    removed = set()
+    blocked_set = set()
+    blocked_map = defaultdict(set)
+    stack = deque()
+    id_to_node = {}
 
-    sccs, scc_printable = tarjans_algorithm(donor_patient_nodes)
-    print(scc_printable)
+    scc.sort(key=lambda node: node.index)
 
-    for scc in sccs:
-        removed = [False] * len(donor_patient_nodes)
-        is_blocked = [False] * len(donor_patient_nodes)
-        blocked_map = defaultdict(set)
-        stack = deque()
-        id_to_node = {}
+    for node in scc:
+        id_to_node[node.index] = node
 
-        scc.sort(key=lambda node: node.index)
-
-        for node in scc:
-            id_to_node[node.index] = node
-
-        for node in scc:
-            # johnsons treats the graph as if the previous nodes that have already
-            # been visited in the scc as if they dont exist
-            for edge in node.out_edges:
-                target_node = edge.donor_recipient_node 
-                is_blocked[target_node.index] = False
+    for node in scc:
+        # johnsons treats the graph as if the previous nodes that have already
+        # been visited in the scc as if they dont exist
+        for edge in node.out_edges:
+            target_node = edge.donor_recipient_node 
+            if target_node in scc:
+                blocked_set.add(target_node.index)
                 unblock(target_node)
-            circuit(node, max_cycle_length, node.index)
-            removed[node.index] = True
+        circuit(node, max_cycle_length, node.index)
+        removed.add(node)
 
+        # new graph
+        new_nodes = [n for n in scc if removed[n.index] == False]
+        def remover(u_node):
+            u_node.out_edges = [e for e in u_node.out_edges if e.donor_recipient_node not in removed]
+            return u_node
+        cleaned_nodes = list(map(remover, new_nodes))
+        return found_cycles + og_johnsons(cleaned_nodes, max_cycle_length)
+    return found_cycles
+    
+def johnsons(donor_patient_nodes, max_cycle_length):
+    sccs, scc_printable = tarjans_algorithm(donor_patient_nodes)
+    found_cycles = []
+    for scc in sccs:
+        found_cycles = found_cycles + og_johnsons(sccs, max_cycle_length)
     found_cycles_printable = []
     for cycle in found_cycles:
         cycle_printable = []
@@ -134,3 +140,5 @@ def johnsons(donor_patient_nodes, max_cycle_length):
     print(len(found_cycles_printable))
     
     return found_cycles, found_cycles_printable
+
+

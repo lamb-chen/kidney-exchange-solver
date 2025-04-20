@@ -3,11 +3,12 @@ import criteria
 import printing 
 
 class HierarchicalOptimiser(object):
-    def __init__(self, pool, cycles):
+    def __init__(self, pool, cycles, test=False):
         self.model = Model()
         self.pool = pool
         self.cycles = cycles
-        
+        self.test = test
+
     def _exchanges_in_optimal_solution(self, items):
             return [item for item in items if item.mip_var.X > 0.5]
     
@@ -84,23 +85,26 @@ class HierarchicalOptimiser(object):
         assert self.model.Status == GRB.Status.OPTIMAL, "Model did not find an optimal solution."
         optimal_cycles = self._exchanges_in_optimal_solution(self.cycles)
         
-        all_selected_cycles = printing.write_solution_obj_values(self.model, self.cycles, "./output/hierarchical_solution_obj_values.txt")
+        if not self.test:
+            all_selected_cycles = printing.write_solution_obj_values(self.model, self.cycles, "./output/hierarchical_solution_obj_values.txt")
+            return optimal_cycles, all_selected_cycles
+        else:
+            return optimal_cycles
 
-        return optimal_cycles, all_selected_cycles
-
-    def run_gurobi_cycle_finder(self, donor_patient_nodes):
+    # this function was for testing the pool's find cycles function was correct
+    def gurobi_find_two_cycles(self, donor_patient_nodes):
         edges = []
         for node in donor_patient_nodes:
             u = (node.donor.id, node.patient.id)
             for e in node.out_edges:
                 target_node = e.donor_recipient_node
-                v = (target_node.donor.id, int(target_node.patient.id))
+                v = (target_node.donor.id, target_node.patient.id)
                 edges.append((u, v))
 
         var_edges = self.model.addVars(edges, vtype=GRB.BINARY, name="edge")
         
         for u, v in edges:
-            # making sure reverse edge exists
+            # making sure the reverse edge exists
             if (v, u) in edges:
                 self.model.addConstr(var_edges[u, v] == var_edges[v, u], name=f"{u}_{v}_two_cycle")
 
@@ -120,7 +124,20 @@ class HierarchicalOptimiser(object):
                     if curr_set not in seen:
                         seen.add(curr_set)
                         two_cycles_list.append((u, v))  
+        print(two_cycles_list)
+        return two_cycles_list
 
+    def gurobi_find_three_cycles(self, donor_patient_nodes):
+        edges = []
+        for node in donor_patient_nodes:
+            u = (node.donor.id, node.patient.id)
+            for e in node.out_edges:
+                target_node = e.donor_recipient_node
+                v = (target_node.donor.id, target_node.patient.id)
+                edges.append((u, v))
+
+        var_edges = self.model.addVars(edges, vtype=GRB.BINARY, name="edge")
+        
         three_cycles = []
         for u, v in edges:
             for w in donor_patient_nodes:
@@ -148,5 +165,5 @@ class HierarchicalOptimiser(object):
                 seen.add(curr_set)
                 if var_edges[u, v].X > 0.5 and var_edges[v, w].X > 0.5 and var_edges[w, u].X > 0.5:
                     three_cycles_list.append((u, v, w)) 
-
-        return two_cycles_list, three_cycles_list
+        print(three_cycles_list)
+        return three_cycles_list

@@ -56,21 +56,12 @@ if __name__ == "__main__":
         reader = r.JSONReader()
         pool = reader.read_json(args.file)
         print("Finished reading input file.\n")
-
-
+        # cycles = pool.create_cycles_objects(3)
+        # pool.all_cycles = cycles
         print("Finding cycles..\n")
-        cycles, found_cycles_printable = johnsons.johnsons(pool.donor_patient_nodes, max_cycle_length)
+        cycles, found_cycles_printable = johnsons.johnsons(pool.donor_patient_nodes[:], max_cycle_length)
         pool.all_cycles = cycles
         print("Cycle objects created.\n")
-
-        # start = time.perf_counter()
-        # # print("Finding cycles..\n")
-        # # cycles = pool.create_cycles_objects(3)
-        # # print("Cycle objects created.\n")
-        # end = time.perf_counter()
-        # total = end - start
-
-        # print(f"time taken: {total}")
 
         if args.lex == "n":
             print("Running Weighted Sum solver...\n")

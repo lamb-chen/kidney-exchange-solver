@@ -20,7 +20,7 @@ class MaxSize():
         return cycle.length
 
     def altruist_val(self):
-        return 1
+        return 0
     
 class MinThreeCycles():
     def __init__(self):
