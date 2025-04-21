@@ -124,7 +124,6 @@ class HierarchicalOptimiser(object):
                     if curr_set not in seen:
                         seen.add(curr_set)
                         two_cycles_list.append((u, v))  
-        print(two_cycles_list)
         return two_cycles_list
 
     def gurobi_find_three_cycles(self, donor_patient_nodes):
@@ -165,5 +164,4 @@ class HierarchicalOptimiser(object):
                 seen.add(curr_set)
                 if var_edges[u, v].X > 0.5 and var_edges[v, w].X > 0.5 and var_edges[w, u].X > 0.5:
                     three_cycles_list.append((u, v, w)) 
-        print(three_cycles_list)
         return three_cycles_list

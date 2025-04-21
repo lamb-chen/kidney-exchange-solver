@@ -1,4 +1,4 @@
-from collections import namedtuple, defaultdict
+from collections import namedtuple, defaultdict, deque
 
 class Altruist(object):
     def __init__(self, id, dage):
@@ -12,14 +12,14 @@ class Altruist(object):
     def add_recipient(self, recipient_patient, score):
         self.recipient_patients.append(RecipientWithScore(recipient_patient, score))
 
-    def add_edge(self, target_donor_patient_node, score):
-        self.out_edges.append(AltruistEdge(self, target_donor_patient_node, score=score))
+#     def add_edge(self, target_donor_patient_node, score):
+#         self.out_edges.append(AltruistEdge(self, target_donor_patient_node, score=score))
 
-class AltruistEdge(object):
-    def __init__(self, altruist, target_donor_patient_node, score):
-        self.altruist = altruist
-        self.target_donor_patient_node = target_donor_patient_node
-        self.score = score
+# class AltruistEdge(object):
+#     def __init__(self, altruist, target_donor_patient_node, score):
+#         self.altruist = altruist
+#         self.target_donor_patient_node = target_donor_patient_node
+#         self.score = score
 
 class Patient(object):
     def __init__(self, id):
@@ -48,7 +48,11 @@ class DonorPatientNode(object):
         self.out_edges = []
         self.is_altruist = is_altruist
         self.low_link_value = None
+        self.dfs_index = None
         self.index = None
+    
+    def set_dfs_index(self, index):
+        self.dfs_index = index
     
     def set_index(self, index):
         self.index = index
@@ -64,6 +68,13 @@ class DonorPatientNode(object):
 
     def add_recipients(self, recipient_patient_list):
         self.recipient_patients.extend(recipient_patient_list)
+    
+    def has_edge_to(self, node):
+        for edge in self.out_edges:
+            target_node = edge.donor_recipient_node
+            if target_node == node:
+                return True
+        return False
 
 class DonorPatientEdge(object):
     def __init__(self, donor_recipient_node, score):
@@ -151,14 +162,38 @@ class Pool():
 
         # OKAY NOW NEED TO ADD ALL THE DUMMY EDGES 
         # for each altruist, add the edges of the donors 
-
+        idx = 0
         for donor_patient_node in self.donor_patient_nodes:
             if not donor_patient_node.is_altruist:
                 for altruist_node in altruist_dp_nodes:
                     # the paper states the weight is set to 0
                     donor_patient_node.add_edge(altruist_node, 0)
+            donor_patient_node.index = idx
+            idx += 1
 
-    def find_cycles(self, max_length):
+    def identify_cycles(self, max_length):
+        cycles = []
+        for dp_node in self.donor_patient_nodes:
+            stack = []
+            stack.append(dp_node)
+            self._cycles(max_length, stack, cycles, dp_node)
+        return cycles
+        
+    def _cycles(self, max_length, stack, cycles, start_node):
+        last_node = stack[-1]
+        if last_node.has_edge_to(start_node) and len(stack) > 1:
+            has_altruist = any(node for node in stack if node.is_altruist)
+            cycles.append(Cycle(list(stack), len(stack), len(cycles), has_altruist))
+        if len(stack) < max_length:
+            for edge in last_node.out_edges:
+                target_node = edge.donor_recipient_node
+                if target_node not in stack and target_node.index > start_node.index:
+                    stack.append(target_node)
+                    self._cycles(max_length, stack, cycles, start_node)
+                    stack.pop()
+                    
+
+    def naive_dfs(self, max_length):
         cycles = set()
         added = set()
         for start_node in self.donor_patient_nodes:
@@ -194,9 +229,8 @@ class Pool():
 
     def create_cycles_objects(self, max_length):
         idx = 0
-
         final_cycles = []
-        found_cycles = self.find_cycles(max_length)
+        found_cycles = self.naive_dfs(max_length)
         is_chain = False
         for cycle in found_cycles:
             for node in cycle:

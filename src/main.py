@@ -58,8 +58,12 @@ if __name__ == "__main__":
         print("Finished reading input file.\n")
         # cycles = pool.create_cycles_objects(3)
         # pool.all_cycles = cycles
+
         print("Finding cycles..\n")
-        cycles, found_cycles_printable = johnsons.johnsons(pool.donor_patient_nodes[:], max_cycle_length)
+        # cycles, found_cycles_printable = johnsons.johnsons(pool.donor_patient_nodes, max_cycle_length)
+        # pool.all_cycles = cycles
+        cycles = pool.identify_cycles(max_cycle_length)
+        # cycles, found_cycles_printable = johnsons.johnsons(pool_copy.donor_patient_nodes, max_cycle_length)
         pool.all_cycles = cycles
         print("Cycle objects created.\n")
 
