@@ -12,15 +12,6 @@ class Altruist(object):
     def add_recipient(self, recipient_patient, score):
         self.recipient_patients.append(RecipientWithScore(recipient_patient, score))
 
-#     def add_edge(self, target_donor_patient_node, score):
-#         self.out_edges.append(AltruistEdge(self, target_donor_patient_node, score=score))
-
-# class AltruistEdge(object):
-#     def __init__(self, altruist, target_donor_patient_node, score):
-#         self.altruist = altruist
-#         self.target_donor_patient_node = target_donor_patient_node
-#         self.score = score
-
 class Patient(object):
     def __init__(self, id):
         self.id = id
@@ -111,6 +102,19 @@ class Cycle(object):
                     break
         return total_score
 
+    def criteria_get_cycle_weight(self, weight_fun):
+        total_score = 0
+        for i in range(len(self.donor_patient_nodes)):
+            current_node = self.donor_patient_nodes[i]
+            next_node = self.donor_patient_nodes[(i + 1) % len(self.donor_patient_nodes)]
+    
+            for edge in current_node.out_edges:
+                if edge.donor_recipient_node == next_node:
+                    total_score += edge.score
+                    total_score += weight_fun(edge.score, current_node.donor.dage, next_node.donor.dage)
+                    break
+        return total_score
+    
 class Pool():
     def __init__(self):
         self.patients = {}

@@ -4,9 +4,8 @@ import printing
 import sys
 import weightedsum
 import plotting
-import johnsons
-import time
 import argparse
+import simple
 
 # allow comma-separated or space-separated weights as input
 def parse_weights(arg):
@@ -56,14 +55,9 @@ if __name__ == "__main__":
         reader = r.JSONReader()
         pool = reader.read_json(args.file)
         print("Finished reading input file.\n")
-        # cycles = pool.create_cycles_objects(3)
-        # pool.all_cycles = cycles
 
         print("Finding cycles..\n")
-        # cycles, found_cycles_printable = johnsons.johnsons(pool.donor_patient_nodes, max_cycle_length)
-        # pool.all_cycles = cycles
-        cycles = pool.identify_cycles(max_cycle_length)
-        # cycles, found_cycles_printable = johnsons.johnsons(pool_copy.donor_patient_nodes, max_cycle_length)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, max_cycle_length)
         pool.all_cycles = cycles
         print("Cycle objects created.\n")
 

@@ -17,20 +17,17 @@ class HierarchicalOptimiser(object):
 
         for constraint in constraint_list:
             if constraint == "MAX_TWO_CYCLES":
-                final_constraints.append([cycle.mip_var * criteria.MaxTwoCycles().cycle_val(cycle) for cycle in cycles])
-                final_constraints.append([altruist.mip_unmatched * criteria.MaxTwoCycles().altruist_val() for altruist in altruists])
+                # final_constraints.append([cycle.mip_var * criteria.MaxTwoCycles().cycle_val(cycle) for cycle in cycles])
+                # final_constraints.append([altruist.mip_unmatched * criteria.MaxTwoCycles().altruist_val() for altruist in altruists])
+                final_constraints.append([cycle.mip_var * criteria.MaxTwoCycles().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxTwoCycles().altruist_val() for altruist in altruists])
             elif constraint == "MAX_SIZE":
-                final_constraints.append([cycle.mip_var * criteria.MaxSize().cycle_val(cycle) for cycle in cycles])
-                final_constraints.append([altruist.mip_unmatched * criteria.MaxSize().altruist_val() for altruist in altruists])
+                final_constraints.append([cycle.mip_var * criteria.MaxSize().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxSize().altruist_val() for altruist in altruists])
             elif constraint == "MAX_BACKARCS":
-                final_constraints.append([cycle.mip_var * criteria.MaxBackarcs().cycle_val(cycle) for cycle in cycles])
-                final_constraints.append([altruist.mip_unmatched * criteria.MaxBackarcs().altruist_val() for altruist in altruists])
+                final_constraints.append([cycle.mip_var * criteria.MaxBackarcs().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxBackarcs().altruist_val() for altruist in altruists])
             elif constraint == "MIN_THREE_CYCLES":
-                final_constraints.append([cycle.mip_var * criteria.MinThreeCycles().cycle_val(cycle) for cycle in cycles])
-                final_constraints.append([altruist.mip_unmatched * criteria.MinThreeCycles().altruist_val() for altruist in altruists])
+                final_constraints.append([cycle.mip_var * criteria.MinThreeCycles().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MinThreeCycles().altruist_val() for altruist in altruists])
             elif constraint == "MAX_WEIGHT":
-                final_constraints.append([cycle.mip_var * criteria.MaxOverallWeight().cycle_val(cycle) for cycle in cycles])
-                final_constraints.append([altruist.mip_unmatched * criteria.MaxOverallWeight().altruist_val() for altruist in altruists])
+                final_constraints.append([cycle.mip_var * criteria.MaxOverallWeight().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxOverallWeight().altruist_val() for altruist in altruists])
         return final_constraints
 
         
@@ -45,21 +42,20 @@ class HierarchicalOptimiser(object):
             for node in cycle.donor_patient_nodes:
                 node.patient.mip_vars.append(cycle.mip_var) 
                 node.donor.mip_vars.append(cycle.mip_var) 
-                
-        for node in pool.donor_patient_nodes:
-            self.model.addConstr(quicksum(node.patient.mip_vars) <= 1)
-            self.model.addConstr(quicksum(node.donor.mip_vars) <= 1)
-        self.model.update()
 
         # paper has constraint s.t. where altruist mip var is 1 if they are unmatched
         # and 0 if they are matched in a cycle so they are not double counted
         # altruist can be added to create a dpd chain, or donate to the deceased donor pool
         for altruist in pool.altruists:
             altruist.mip_unmatched = self.model.addVar(vtype=GRB.BINARY, name=f'unmatched_altruist_{altruist.id}')
-            self.model.addConstr(
-                altruist.mip_unmatched + quicksum(altruist.mip_vars) == 1,
-                name=f'altruist_constraint_{altruist.id}')
-       
+            altruist.mip_vars.append(altruist.mip_unmatched)
+        
+        for node in pool.donor_patient_nodes:
+            if node.is_altruist:
+                self.model.addConstr(quicksum(node.donor.mip_vars) == 1)
+            else:
+                self.model.addConstr(quicksum(node.donor.mip_vars) <= 1)
+            self.model.addConstr(quicksum(node.patient.mip_vars) <= 1)       
         # setting the multi-objective method to 1 = hierarchical
         # setting to 0 = weighted sum 
         self.model.setParam(GRB.Param.MultiObjMethod, 1) 
@@ -75,10 +71,10 @@ class HierarchicalOptimiser(object):
         final_constraints = self._add_chosen_objectives(constraint_list, self.cycles, pool.altruists)
 
         for i in range(len(final_constraints)):
-            if constraint_list[i//2] == "MIN_THREE_CYCLES":
-                self.model.setObjectiveN(-quicksum(final_constraints[i]), index=i, weight=1.0, priority=i, name=f"{constraint_list[i//2]}_{i}")        
+            if constraint_list[i] == "MIN_THREE_CYCLES":
+                self.model.setObjectiveN(-quicksum(final_constraints[i]), index=i, weight=1.0, priority=i, name=f"{constraint_list[i]}_{i}")        
             else:
-                self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, weight=1.0, priority=i, name=f"{constraint_list[i//2]}_{i}")        
+                self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, weight=1.0, priority=i, name=f"{constraint_list[i]}_{i}")        
                 
         self.model.optimize()
 
@@ -93,6 +89,8 @@ class HierarchicalOptimiser(object):
 
     # this function was for testing the pool's find cycles function was correct
     def gurobi_find_two_cycles(self, donor_patient_nodes):
+        self.model.reset()
+
         edges = []
         for node in donor_patient_nodes:
             u = (node.donor.id, node.patient.id)
@@ -127,6 +125,8 @@ class HierarchicalOptimiser(object):
         return two_cycles_list
 
     def gurobi_find_three_cycles(self, donor_patient_nodes):
+        self.model.reset()
+
         edges = []
         for node in donor_patient_nodes:
             u = (node.donor.id, node.patient.id)
@@ -138,11 +138,16 @@ class HierarchicalOptimiser(object):
         var_edges = self.model.addVars(edges, vtype=GRB.BINARY, name="edge")
         
         three_cycles = []
-        for u, v in edges:
-            for w in donor_patient_nodes:
-                w_id = (w.donor.id, w.patient.id)
-                if (v, w_id) in edges and (w_id, u) in edges:
-                    three_cycles.append((u, v, w_id))
+        for node_1 in donor_patient_nodes:
+            u = (node_1.donor.id, node_1.patient.id)
+            for e1 in node_1.out_edges:
+                node_2 = e1.donor_recipient_node
+                v = (node_2.donor.id, node_2.patient.id)
+                for e2 in node_2.out_edges:
+                    node_3 = e2.donor_recipient_node
+                    w = (node_3.donor.id, node_3.patient.id)
+                    if (w, u) in edges:
+                        three_cycles.append((u, v, w))
 
         for (u, v, w) in three_cycles:
             self.model.addConstr(var_edges[u, v] + var_edges[v, w] + var_edges[w, u] == 3, name=f"{u}_{v}_{w}_three_cycle")

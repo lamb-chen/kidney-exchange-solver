@@ -124,7 +124,7 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
     selected_altruist_count = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if node.is_altruist)
     unmatched_altruist_count = total_num_of_altruists - selected_altruist_count
     
-    selected_node_count = selected_patient_count + selected_altruist_count
+    selected_node_count = selected_patient_count
     total_transplants = selected_patient_count + total_num_of_altruists
 
     total_cycles = sum(1 for cycle in pool.all_cycles if not cycle.is_chain)

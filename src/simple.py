@@ -1,11 +1,5 @@
-from collections import deque, defaultdict
+from collections import deque
 from pool import Cycle
-import printing
-
-def print_sub(subgraph):
-    print(f"SUBGRAPH START: \n")
-    for node in subgraph:
-        print(f"({node.donor.id}, ({node.patient.id}))")
 
 def find_simple_cycles(donor_patient_nodes, max_cycle_length):
     ignore = set()
@@ -14,7 +8,6 @@ def find_simple_cycles(donor_patient_nodes, max_cycle_length):
     for start_node in donor_patient_nodes:
         subgraph = create_subgraph(start_node, max_cycle_length, ignore)
         subgraph.sort(key=lambda n: n.index)
-        print_sub(subgraph)
         ignore.add(start_node)
         lock = {}
         blist = {}
