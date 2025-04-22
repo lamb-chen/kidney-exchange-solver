@@ -1,7 +1,7 @@
 import unittest
 from src import reader as r
 from src import hierarchical
-from src import johnsons
+from src import simple
 
 class TestIndividualCriteria(unittest.TestCase):
 
@@ -9,17 +9,17 @@ class TestIndividualCriteria(unittest.TestCase):
         filename = "tests/datasets/test_max_cycles.json"
         reader = r.JSONReader()
         pool = reader.read_json(filename)
-        cycles, _ = johnsons.johnsons(pool.donor_patient_nodes, 3)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, 3)
         g_solver = hierarchical.HierarchicalOptimiser(pool=pool, cycles=cycles, test=True)
         constraint_list = ["MAX_SIZE"]
         optimal_cycles = g_solver.optimise(pool, constraint_list)
         self.assertEqual(len(optimal_cycles[0].donor_patient_nodes), 3)
-
+        
     def test_max_two_cycles(self):
         filename = "tests/datasets/test_max_cycles.json"
         reader = r.JSONReader()
         pool = reader.read_json(filename)
-        cycles, _ = johnsons.johnsons(pool.donor_patient_nodes, 3)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, 3)
         g_solver = hierarchical.HierarchicalOptimiser(pool=pool, cycles=cycles, test=True)
         constraint_list = ["MAX_TWO_CYCLES"]
         optimal_cycles = g_solver.optimise(pool, constraint_list)
@@ -31,7 +31,7 @@ class TestIndividualCriteria(unittest.TestCase):
         filename = "tests/datasets/test_max_backarcs.json"
         reader = r.JSONReader()
         pool = reader.read_json(filename)
-        cycles, _ = johnsons.johnsons(pool.donor_patient_nodes, 3)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, 3)
         g_solver = hierarchical.HierarchicalOptimiser(pool=pool, cycles=cycles, test=True)
         constraint_list = ["MAX_BACKARCS"]
         optimal_cycles = g_solver.optimise(pool, constraint_list)
@@ -44,7 +44,7 @@ class TestIndividualCriteria(unittest.TestCase):
         filename = "tests/datasets/test_max_backarcs_2.json"
         reader = r.JSONReader()
         pool = reader.read_json(filename)
-        cycles, _ = johnsons.johnsons(pool.donor_patient_nodes, 3)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, 3)
         g_solver = hierarchical.HierarchicalOptimiser(pool=pool, cycles=cycles, test=True)
         constraint_list = ["MAX_BACKARCS"]
         optimal_cycles = g_solver.optimise(pool, constraint_list)
@@ -56,7 +56,7 @@ class TestIndividualCriteria(unittest.TestCase):
         filename = "tests/datasets/test_max_cycles.json"
         reader = r.JSONReader()
         pool = reader.read_json(filename)
-        cycles, _ = johnsons.johnsons(pool.donor_patient_nodes, 3)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, 3)
         g_solver = hierarchical.HierarchicalOptimiser(pool=pool, cycles=cycles, test=True)
         constraint_list = ["MAX_SIZE", "MIN_THREE_CYCLES"]
         optimal_cycles = g_solver.optimise(pool, constraint_list)

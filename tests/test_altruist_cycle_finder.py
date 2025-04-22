@@ -2,7 +2,7 @@ import unittest
 from src import reader as r
 from src import hierarchical
 from src import printing
-from src import johnsons
+from src import simple
 
 class TestAltruistCycleFinder(unittest.TestCase):
 
@@ -10,14 +10,14 @@ class TestAltruistCycleFinder(unittest.TestCase):
         filename = "tests/datasets/test_example.json"
         reader = r.JSONReader()
         pool = reader.read_json(filename)
-        cycles, _ = johnsons.johnsons(pool.donor_patient_nodes, 3)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, 3)
         self.assertEqual(len(cycles), 9)
 
     def test_altruist_included(self):
         filename = "tests/datasets/test_example.json"
         reader = r.JSONReader()
         pool = reader.read_json(filename)
-        cycles, _ = johnsons.johnsons(pool.donor_patient_nodes, 3)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, 3)
         g_solver = hierarchical.HierarchicalOptimiser(pool=pool, cycles=cycles, test=True)
         constraint_list = ["MAX_SIZE"]
         optimal_cycles = g_solver.optimise(pool, constraint_list)
@@ -30,7 +30,7 @@ class TestAltruistCycleFinder(unittest.TestCase):
         filename = "tests/datasets/test_altruist_split_1.json"
         reader = r.JSONReader()
         pool = reader.read_json(filename)
-        cycles, _ = johnsons.johnsons(pool.donor_patient_nodes, 3)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, 3)
         g_solver = hierarchical.HierarchicalOptimiser(pool=pool, cycles=cycles, test=True)
         constraint_list = ["MAX_SIZE"]
         optimal_cycles = g_solver.optimise(pool, constraint_list)
@@ -40,7 +40,7 @@ class TestAltruistCycleFinder(unittest.TestCase):
         filename = "tests/datasets/test_altruist_split_2.json"
         reader = r.JSONReader()
         pool = reader.read_json(filename)
-        cycles, _ = johnsons.johnsons(pool.donor_patient_nodes, 3)
+        cycles = simple.find_simple_cycles(pool.donor_patient_nodes, 3)
         g_solver = hierarchical.HierarchicalOptimiser(pool=pool, cycles=cycles, test=True)
         constraint_list = ["MAX_SIZE"]
         optimal_cycles = g_solver.optimise(pool, constraint_list)
