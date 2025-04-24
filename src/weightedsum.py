@@ -19,8 +19,6 @@ class WeightedSumOptimiser(object):
 
         for constraint in constraint_list:
             if constraint == "MAX_TWO_CYCLES":
-                # final_constraints.append([cycle.mip_var * criteria.MaxTwoCycles().cycle_val(cycle) for cycle in cycles])
-                # final_constraints.append([altruist.mip_unmatched * criteria.MaxTwoCycles().altruist_val() for altruist in altruists])
                 final_constraints.append([cycle.mip_var * criteria.MaxTwoCycles().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxTwoCycles().altruist_val() for altruist in altruists])
             elif constraint == "MAX_SIZE":
                 final_constraints.append([cycle.mip_var * criteria.MaxSize().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxSize().altruist_val() for altruist in altruists])
@@ -73,16 +71,14 @@ class WeightedSumOptimiser(object):
         final_constraints = self._add_chosen_objectives(constraint_list, self.cycles, pool.altruists)
 
         for i in range(len(final_constraints)):
-            if constraint_list[i//2] == "MIN_THREE_CYCLES":
-                self.model.setObjectiveN(-quicksum(final_constraints[i]), index=i, priority=0, name=f"{constraint_list[i//2]}_{i}")    
+            if constraint_list[i] == "MIN_THREE_CYCLES":
+                self.model.setObjectiveN(-quicksum(final_constraints[i]), index=i, priority=0, name=f"{constraint_list[i]}_{i}")    
             else:
-                self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, priority=0, name=f"{constraint_list[i//2]}_{i}")     
+                self.model.setObjectiveN(quicksum(final_constraints[i]), index=i, priority=0, name=f"{constraint_list[i]}_{i}")     
         self.model.update()
         
-        for i in range(0, self.model.NumObj//2):
-            self.model.Params.ObjNumber = 2 * i
-            self.model.ObjNWeight = self.weights[i]
-            self.model.Params.ObjNumber = (2 * i) + 1
+        for i in range(0, self.model.NumObj):
+            self.model.Params.ObjNumber = i
             self.model.ObjNWeight = self.weights[i]
 
         self.model.update()

@@ -6,6 +6,7 @@ import weightedsum
 import plotting
 import argparse
 import simple
+import normalisation
 
 # allow comma-separated or space-separated weights as input
 def parse_weights(arg):
@@ -25,7 +26,12 @@ if __name__ == "__main__":
                         required=True)
     
     parser.add_argument("-l", "--lex",
-                        help="y/n, yes will run lexcographic/hierarchical optimisation,\nno means solver will run weighted sum optimisation",
+                        help="y/n, yes will run lexcographic/hierarchical optimisation,\nno means solver will run normaliser or weighted sum optimisation",
+                        choices=["y", "n"],
+                        required=True)
+
+    parser.add_argument("-n", "--normalise",
+                        help="y/n, yes will run normaliser",
                         choices=["y", "n"],
                         required=True)
     
@@ -46,7 +52,7 @@ if __name__ == "__main__":
 
     weights_list = args.weights
 
-    if args.lex == 'n' and not args.weights:
+    if args.lex == 'n' and args.normalise == 'n' and not args.weights:
         parser.error("--weights is required when --lex is 'n' i.e. when running weighted sum model")
 
     if args.file.endswith(".json"):
@@ -62,28 +68,39 @@ if __name__ == "__main__":
         print("Cycle objects created.\n")
 
         if args.lex == "n":
-            print("Running Weighted Sum solver...\n")
-            g_solver = weightedsum.WeightedSumOptimiser(pool, cycles, weights_list)
-            constraint_list = ["MAX_WEIGHT", "MIN_THREE_CYCLES", "MAX_BACKARCS", "MAX_SIZE", "MAX_TWO_CYCLES"]
-            optimal_cycles, all_selected_cycles = g_solver.optimise(pool, constraint_list)
-            print("\n\nWeighted Sum solver successfully ran.\n")
+            if args.normalise == "y":
+                print("Running normaliser...\n")
+                g_solver = normalisation.Normaliser(pool, cycles)
+                constraint_list = ["MAX_WEIGHT", "MAX_BACKARCS", "MIN_THREE_CYCLES", "MAX_SIZE", "MAX_TWO_CYCLES"]
+                max_values = g_solver.find_max_values(pool, constraint_list)
+                print("\n", max_values)
+                print("\n\nNormaliser successfully ran.\n")
+                print("Program successfully completed.\n")
 
-            print("Writing to output files...\n")
-            printing.write_all_solutions_to_file(optimal_cycles, all_selected_cycles, "./output/weighted_sum_all_solutions.txt")
-            printing.write_optimal_solution_results(optimal_cycles, pool, "./output/weighted_sum_optimal_solution_results.txt")
-            print("Finished writing to output files.\n")
+            else:
+                print("Running Weighted Sum solver...\n")
+                g_solver = weightedsum.WeightedSumOptimiser(pool, cycles, weights_list)
+                constraint_list = ["MAX_WEIGHT", "MAX_BACKARCS", "MIN_THREE_CYCLES", "MAX_SIZE", "MAX_TWO_CYCLES"]
+                optimal_cycles, all_selected_cycles = g_solver.optimise(pool, constraint_list)
+                print("\n\nWeighted Sum solver successfully ran.\n")
 
-            print("Plotting graphs...\n")
-            solver_type = "weighted_sum"
-            plotter = plotting.Plot(optimal_cycles, pool.donor_patient_nodes, solver_type)
-            plotter.plot_graph()
-            print("Finished plotting graphs.\n")
-            print("Program successfully completed.\n")
+                print("Writing to output files...\n")
+                printing.write_all_solutions_to_file(optimal_cycles, all_selected_cycles, "./output/weighted_sum_all_solutions.txt")
+                printing.write_optimal_solution_results(optimal_cycles, pool, "./output/weighted_sum_optimal_solution_results.txt")
+                print("Finished writing to output files.\n")
+
+                print("Plotting graphs...\n")
+                solver_type = "weighted_sum"
+                plotter = plotting.Plot(optimal_cycles, pool.donor_patient_nodes, solver_type)
+                plotter.plot_graph()
+                print("Finished plotting graphs.\n")
+                print("Program successfully completed.\n")
 
         elif args.lex == "y":
             print("Running Hierarchical solver...\n")
             g_solver = hierarchical.HierarchicalOptimiser(pool, cycles)
-            constraint_list = ["MAX_WEIGHT", "MIN_THREE_CYCLES", "MAX_BACKARCS", "MAX_SIZE", "MAX_TWO_CYCLES"]
+            # put in order of least important to most
+            constraint_list = ["MAX_WEIGHT", "MAX_BACKARCS", "MIN_THREE_CYCLES", "MAX_SIZE", "MAX_TWO_CYCLES"]
             optimal_cycles, all_selected_cycles = g_solver.optimise(pool, constraint_list)
             print("\n\nHierarchical solver successfully ran.\n")
 

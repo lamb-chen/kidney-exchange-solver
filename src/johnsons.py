@@ -108,7 +108,6 @@ def johnsons(donor_patient_nodes, max_cycle_length):
         return f
 
     sccs, scc_printable = tarjans_algorithm(donor_patient_nodes)
-    print(scc_printable)
 
     for scc in sccs:
         removed = [False] * len(donor_patient_nodes)
