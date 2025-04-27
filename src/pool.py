@@ -122,9 +122,6 @@ class Pool():
         self.altruists = []
         self.all_cycles = None
 
-    # def add_patient(self, patient):
-    #     self.patients.append(patient)
-    
     def add_donor_patient_node(self, donor_patient_node):
         self.donor_patient_nodes.append(donor_patient_node)
 
