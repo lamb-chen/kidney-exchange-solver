@@ -124,7 +124,6 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
     selected_altruist_count = sum(1 for cycle in optimal_cycles for node in cycle.donor_patient_nodes if node.is_altruist)
     unmatched_altruist_count = total_num_of_altruists - selected_altruist_count
     
-    selected_node_count = selected_patient_count
     total_transplants = selected_patient_count + total_num_of_altruists
 
     total_cycles = sum(1 for cycle in pool.all_cycles if not cycle.is_chain)
@@ -157,14 +156,16 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
         if node.patient.cpra is not None
         if node.patient.cpra > 0.85
     )       
+
+    total_two_chain = (sum(1 for cycle in pool.all_cycles if cycle.is_chain and cycle.length == 2))
+    total_three_chain = (sum(1 for cycle in pool.all_cycles if cycle.is_chain and cycle.length == 3))
     with open(filename, 'w') as file:
         file.write("Final Chosen Optimal Exchanges\n")
 
-        file.write(f"\nIdentified exchange set weight*: {selected_exchanges_weight}")    
+        file.write(f"\nIdentified exchange set total score*: {selected_exchanges_weight}")    
 
         file.write(f"\n\nTotal potential nodes: {total_nodes}")
-        file.write(f"\nNumber of selected nodes: {selected_node_count}")
-        file.write(f"\nNumber of selected transplants*: {total_transplants}")
+        file.write(f"\nNumber of selected transplants/nodes*: {total_transplants}")
         file.write(f"\nTotal edges: {total_edges}")    
 
         file.write(f"\n\nTotal number of patients: {total_num_of_patients}")
@@ -187,6 +188,8 @@ def write_optimal_solution_results(optimal_cycles, pool, filename):
         file.write(f"\n\nNumber of backarcs in final exchange set: {selected_num_of_backarcs}")        
 
         file.write(f"\n\nTotal potential chains: {total_chains}")
+        file.write(f"\n\nTotal two-length chains: {total_two_chain}")
+        file.write(f"\n\nTotal three-length chains: {total_three_chain}")
         file.write(f"\nNumber of selected chains: {selected_chains}")   
         file.write(f"\nNumber of selected three-length chains: {selected_three_chains}") 
         file.write(f"\nNumber of selected two-length chains: {selected_two_chains}") 

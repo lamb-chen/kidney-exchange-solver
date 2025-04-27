@@ -44,7 +44,7 @@ class MaxBackarcs():
     def altruist_val(self):
         return 0
     
-class MaxOverallWeight():
+class MaxOverallScore():
     def __init__(self):
         self.obj = "MAX"
         

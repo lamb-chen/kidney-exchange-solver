@@ -21,13 +21,13 @@ class WeightedSumOptimiser(object):
             if constraint == "MAX_TWO_CYCLES":
                 final_constraints.append([cycle.mip_var * criteria.MaxTwoCycles().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxTwoCycles().altruist_val() for altruist in altruists])
             elif constraint == "MAX_SIZE":
-                final_constraints.append([cycle.mip_var * criteria.MaxSize().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxSize().altruist_val() for altruist in altruists])
+                final_constraints.append([cycle.mip_var * criteria.MaxSize().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxSize().altruist_val() / 10 for altruist in altruists])
             elif constraint == "MAX_BACKARCS":
                 final_constraints.append([cycle.mip_var * criteria.MaxBackarcs().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxBackarcs().altruist_val() for altruist in altruists])
             elif constraint == "MIN_THREE_CYCLES":
                 final_constraints.append([cycle.mip_var * criteria.MinThreeCycles().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MinThreeCycles().altruist_val() for altruist in altruists])
             elif constraint == "MAX_WEIGHT":
-                final_constraints.append([cycle.mip_var * criteria.MaxOverallWeight().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxOverallWeight().altruist_val() for altruist in altruists])
+                final_constraints.append([cycle.mip_var * criteria.MaxOverallScore().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxOverallScore().altruist_val() / 1000 for altruist in altruists])
         return final_constraints
 
         
@@ -89,80 +89,3 @@ class WeightedSumOptimiser(object):
         all_selected_cycles = printing.write_solution_obj_values(self.model, self.cycles, "./output/weighted_sum_solution_obj_values.txt")
 
         return optimal_cycles, all_selected_cycles
-
-    # this function was for testing the pool's find cycles function was correct
-    def gurobi_find_two_cycles(self, donor_patient_nodes):
-        edges = []
-        for node in donor_patient_nodes:
-            u = (node.donor.id, node.patient.id)
-            for e in node.out_edges:
-                target_node = e.donor_recipient_node
-                v = (target_node.donor.id, int(target_node.patient.id))
-                edges.append((u, v))
-
-        var_edges = self.model.addVars(edges, vtype=GRB.BINARY, name="edge")
-        
-        for u, v in edges:
-            # making sure the reverse edge exists
-            if (v, u) in edges:
-                self.model.addConstr(var_edges[u, v] == var_edges[v, u], name=f"{u}_{v}_two_cycle")
-
-        self.model.setObjective(quicksum(var_edges[u, v] for u, v in edges if (v, u) in edges), GRB.MAXIMIZE)
-        self.model.optimize()
-
-        seen = set()
-        two_cycles_list = []
-
-        # finding 2-cycles
-        for u, v in edges:
-            if (u, v) in edges and (v, u) in edges:
-                # > 0.5 means edge has been selected
-                # check both to and back have been selected                
-                if var_edges[u, v].X > 0.5 and var_edges[v, u].X > 0.5:
-                    curr_set = frozenset((u, v))
-                    if curr_set not in seen:
-                        seen.add(curr_set)
-                        two_cycles_list.append((u, v))  
-                        
-        return two_cycles_list
-
-    def gurobi_find_three_cycles(self, donor_patient_nodes):
-        edges = []
-        for node in donor_patient_nodes:
-            u = (node.donor.id, node.patient.id)
-            for e in node.out_edges:
-                target_node = e.donor_recipient_node
-                v = (target_node.donor.id, int(target_node.patient.id))
-                edges.append((u, v))
-
-        var_edges = self.model.addVars(edges, vtype=GRB.BINARY, name="edge")
-        
-        three_cycles = []
-        for u, v in edges:
-            for w in donor_patient_nodes:
-                w_id = (w.donor.id, w.patient.id)
-                if (v, w_id) in edges and (w_id, u) in edges:
-                    three_cycles.append((u, v, w_id))
-
-        for (u, v, w) in three_cycles:
-            self.model.addConstr(var_edges[u, v] + var_edges[v, w] + var_edges[w, u] == 3, name=f"{u}_{v}_{w}_three_cycle")
-
-        self.model.setObjective(
-            quicksum(var_edges[u, v] + var_edges[v, w] + var_edges[w, u] for (u, v, w) in three_cycles) / 3,
-            GRB.MAXIMIZE
-        )
-        
-        self.model.optimize()
-
-        seen = set()
-        three_cycles_list = []
-
-        # finding 3-cycles
-        for (u, v, w) in three_cycles:
-            curr_set = frozenset((u, v, w))
-            if curr_set not in seen:
-                seen.add(curr_set)
-                if var_edges[u, v].X > 0.5 and var_edges[v, w].X > 0.5 and var_edges[w, u].X > 0.5:
-                    three_cycles_list.append((u, v, w)) 
-
-        return three_cycles_list

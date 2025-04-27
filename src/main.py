@@ -71,7 +71,7 @@ if __name__ == "__main__":
             if args.normalise == "y":
                 print("Running normaliser...\n")
                 g_solver = normalisation.Normaliser(pool, cycles)
-                constraint_list = ["MAX_WEIGHT", "MAX_BACKARCS", "MIN_THREE_CYCLES", "MAX_SIZE", "MAX_TWO_CYCLES"]
+                constraint_list = ["MAX_WEIGHT", "MAX_BACKARCS", "MAX_SIZE", "MAX_TWO_CYCLES"]
                 max_values = g_solver.find_max_values(pool, constraint_list)
                 print("\n", max_values)
                 print("\n\nNormaliser successfully ran.\n")

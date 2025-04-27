@@ -17,8 +17,6 @@ class HierarchicalOptimiser(object):
 
         for constraint in constraint_list:
             if constraint == "MAX_TWO_CYCLES":
-                # final_constraints.append([cycle.mip_var * criteria.MaxTwoCycles().cycle_val(cycle) for cycle in cycles])
-                # final_constraints.append([altruist.mip_unmatched * criteria.MaxTwoCycles().altruist_val() for altruist in altruists])
                 final_constraints.append([cycle.mip_var * criteria.MaxTwoCycles().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxTwoCycles().altruist_val() for altruist in altruists])
             elif constraint == "MAX_SIZE":
                 final_constraints.append([cycle.mip_var * criteria.MaxSize().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxSize().altruist_val() for altruist in altruists])
@@ -27,7 +25,7 @@ class HierarchicalOptimiser(object):
             elif constraint == "MIN_THREE_CYCLES":
                 final_constraints.append([cycle.mip_var * criteria.MinThreeCycles().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MinThreeCycles().altruist_val() for altruist in altruists])
             elif constraint == "MAX_WEIGHT":
-                final_constraints.append([cycle.mip_var * criteria.MaxOverallWeight().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxOverallWeight().altruist_val() for altruist in altruists])
+                final_constraints.append([cycle.mip_var * criteria.MaxOverallScore().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxOverallScore().altruist_val() for altruist in altruists])
         return final_constraints
 
         

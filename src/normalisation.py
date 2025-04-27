@@ -21,7 +21,7 @@ class Normaliser(object):
         elif constraint == "MIN_THREE_CYCLES":
             final_constraint = [cycle.mip_var * criteria.MinThreeCycles().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MinThreeCycles().altruist_val() for altruist in altruists]
         elif constraint == "MAX_WEIGHT":
-            final_constraint = [cycle.mip_var * criteria.MaxOverallWeight().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxOverallWeight().altruist_val() for altruist in altruists]
+            final_constraint = [cycle.mip_var * criteria.MaxOverallScore().cycle_val(cycle) for cycle in cycles] + [altruist.mip_unmatched * criteria.MaxOverallScore().altruist_val() for altruist in altruists]
         return final_constraint
 
         
@@ -56,6 +56,7 @@ class Normaliser(object):
         self.model.update()
     
     def find_max_values(self, pool, constraint_list):
+        self.model.reset()
         max_values = {}
         for constraint in constraint_list:
             max_values[constraint] = self._optimise(pool, constraint)
