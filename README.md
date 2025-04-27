@@ -13,7 +13,7 @@ Note: a license must be accquired. This project was created with the free academ
 ## How to run
 Command:
 ```
-python main.py -f="filename" -l="n" -w="0.1,1,0.1,0.1,0.1" -c=3
+python main.py -f="filename" -l="n" -w="0.1, 0.4, 0.01, 0.499, 0.01"  -n="n"  -c=3
 ```
 The above command runs the weighted sum version of the solver on the dataset specified by the filename (must be JSON), and has a maximum cycle length of 3. The weightings used for each objective function in the weighted sum solver are based on the weight list provided [0.1, 1, 0.1, 0.1, 0.1].
 To run the lexcographical/hierarchical version, use `-l="y"` instead.   
@@ -23,6 +23,8 @@ All Flag Options:
   -h, --help            show this help message and exit
   -f FILE, --file FILE  Input file name
   -l LEX, --lex LEX     y/n, yes will run lexcographic/hierarchical optimisation, no means solver will run weighted sum optimisation
+  -n {y,n}, --normalise {y,n}
+                        y/n, yes will run normaliser
   -w WEIGHTS, --weights WEIGHTS
                         Only necessary when running weighted sum model. List of 5 weights for each criteria e.g., '--weights 0.1 0.2 0.7' or '--weights 0.1,0.2,0.7' The order corresponds to the order of the criteria: MAX_WEIGHT, MIN_THREE_CYCLES, MAX_BACKARCS, MAX_SIZE,
                         MAX_TWO_CYCLES
